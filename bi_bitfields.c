@@ -6,7 +6,7 @@
 #define CLIENTHEIGHT  384
 #define WINDOWSTYLE   WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME & ~WS_MAXIMIZEBOX
 
-static HBITMAP hbitmap1;
+static HBITMAP hbitmap[8];
 
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 static void init_bitmaps(HWND hwnd);
@@ -71,7 +71,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
     PAINTSTRUCT ps;
     RECT        rect;
     BITMAP      bm;
-    int         i, j;
+    int         i;
 
     switch (message) {
         case WM_CREATE:
@@ -81,14 +81,17 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             hdc = BeginPaint(hwnd, &ps);
             GetClientRect(hwnd, &rect);
 
+            GetObject(hbitmap[0], sizeof(bm), &bm);
             HDC hdcMem = CreateCompatibleDC(hdc);
-            HBITMAP hbmOld = SelectObject(hdcMem, hbitmap1);
-            GetObject(hbitmap1, sizeof(bm), &bm);
-            for (i = 0; i < CLIENTWIDTH; i += BITMAP1WIDTH) {
-                for (j = 0; j < CLIENTHEIGHT; j += BITMAP1HEIGHT) {
-                    BitBlt(hdc, i, j, bm.bmWidth, bm.bmHeight, hdcMem, 0, 0, SRCCOPY);
-                }
+
+            HBITMAP hbmOld = SelectObject(hdcMem, hbitmap[0]);
+            BitBlt(hdc, 0, 0, bm.bmWidth, bm.bmHeight, hdcMem, 0, 0, SRCCOPY);
+
+            for (i = 1; i < 8; i++) {
+                SelectObject(hdcMem, hbitmap[i]);
+                BitBlt(hdc, i * 64, 0, bm.bmWidth, bm.bmHeight, hdcMem, 0, 0, SRCCOPY);
             }
+
             SelectObject(hdcMem, hbmOld);
             DeleteDC(hdcMem);
 
@@ -105,35 +108,13 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 
 static void init_bitmaps(HWND hwnd) {
     int i, j;
-    unsigned char red, green, blue;
 
     unsigned char *sampleimage = (unsigned char*)calloc(1, BITMAP1WIDTH * BITMAP1HEIGHT * 4);
     for (i = 0; i < BITMAP1WIDTH; i++) {
         for (j = 0; j < BITMAP1HEIGHT; j++) {
-            if (i < j) {
-                if (i + j < BITMAP1WIDTH) {
-                    red = 255;
-                    green = 0;
-                    blue = 0;
-                } else {
-                    red = 0;
-                    green = 0;
-                    blue = 255;
-                }
-            } else {
-                if (i + j < BITMAP1WIDTH) {
-                    red = 0;
-                    green = 255;
-                    blue = 0;
-                } else {
-                    red = 0;
-                    green = 255;
-                    blue = 255;
-                }
-            }
-            sampleimage[(i * BITMAP1HEIGHT + j) * 4] = red;
-            sampleimage[(i * BITMAP1HEIGHT + j) * 4 + 1] = green;
-            sampleimage[(i * BITMAP1HEIGHT + j) * 4 + 2] = blue;
+            sampleimage[(i * BITMAP1HEIGHT + j) * 4]     = (i * 4) % 255;
+            sampleimage[(i * BITMAP1HEIGHT + j) * 4 + 1] = (j * 4) % 255;
+            sampleimage[(i * BITMAP1HEIGHT + j) * 4 + 2] = (i + j) % 255;
             sampleimage[(i * BITMAP1HEIGHT + j) * 4 + 3] = 255;
         }
     }
@@ -158,13 +139,50 @@ static void init_bitmaps(HWND hwnd) {
     pbmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     pbmi->bmiHeader.biPlanes = 1;
     pbmi->bmiHeader.biSizeImage = BITMAP1WIDTH * BITMAP1HEIGHT * 4;
+
+    /* Create bitmaps */
+    HDC hdc = GetDC(hwnd);
+
     ((DWORD *)pbmi->bmiColors)[0] = 0x00FF0000;
     ((DWORD *)pbmi->bmiColors)[1] = 0x0000FF00;
     ((DWORD *)pbmi->bmiColors)[2] = 0x000000FF;
+    hbitmap[0] = CreateDIBitmap(hdc, &bmih, CBM_INIT, sampleimage, pbmi, DIB_RGB_COLORS);
 
-    /* Create bitmap */
-    HDC hdc = GetDC(hwnd);
-    hbitmap1 = CreateDIBitmap(hdc, &bmih, CBM_INIT, sampleimage, pbmi, DIB_RGB_COLORS);
+    ((DWORD *)pbmi->bmiColors)[0] = 0x000000FF;
+    ((DWORD *)pbmi->bmiColors)[1] = 0x00FF0000;
+    ((DWORD *)pbmi->bmiColors)[2] = 0x0000FF00;
+    hbitmap[1] = CreateDIBitmap(hdc, &bmih, CBM_INIT, sampleimage, pbmi, DIB_RGB_COLORS);
+
+    ((DWORD *)pbmi->bmiColors)[0] = 0x0000FF00;
+    ((DWORD *)pbmi->bmiColors)[1] = 0x000000FF;
+    ((DWORD *)pbmi->bmiColors)[2] = 0x00FF0000;
+    hbitmap[2] = CreateDIBitmap(hdc, &bmih, CBM_INIT, sampleimage, pbmi, DIB_RGB_COLORS);
+
+    ((DWORD *)pbmi->bmiColors)[0] = 0b00000000111111111000000000000000;
+    ((DWORD *)pbmi->bmiColors)[1] = 0b00000000000000000111111100000000;
+    ((DWORD *)pbmi->bmiColors)[2] = 0b00000000000000000000000011111111;
+    hbitmap[3] = CreateDIBitmap(hdc, &bmih, CBM_INIT, sampleimage, pbmi, DIB_RGB_COLORS);
+
+    ((DWORD *)pbmi->bmiColors)[0] = 0b00000000111111111000000000000000;
+    ((DWORD *)pbmi->bmiColors)[1] = 0b00000000000000000111111111000000;
+    ((DWORD *)pbmi->bmiColors)[2] = 0b00000000000000000000000000111111;
+    hbitmap[4] = CreateDIBitmap(hdc, &bmih, CBM_INIT, sampleimage, pbmi, DIB_RGB_COLORS);
+
+    ((DWORD *)pbmi->bmiColors)[0] = 0b00000000111000001110000011100000;
+    ((DWORD *)pbmi->bmiColors)[1] = 0b00000000000111000001110000011100;
+    ((DWORD *)pbmi->bmiColors)[2] = 0b00000000000000110000001100000011;
+    hbitmap[5] = CreateDIBitmap(hdc, &bmih, CBM_INIT, sampleimage, pbmi, DIB_RGB_COLORS);
+
+    ((DWORD *)pbmi->bmiColors)[0] = 0b00000000110000110000110000110000;
+    ((DWORD *)pbmi->bmiColors)[1] = 0b00000000001100001100001100001100;
+    ((DWORD *)pbmi->bmiColors)[2] = 0b00000000000011000011000011000011;
+    hbitmap[6] = CreateDIBitmap(hdc, &bmih, CBM_INIT, sampleimage, pbmi, DIB_RGB_COLORS);
+
+    ((DWORD *)pbmi->bmiColors)[0] = 0b00000000100100100100100100100100;
+    ((DWORD *)pbmi->bmiColors)[1] = 0b00000000010010010010010010010010;
+    ((DWORD *)pbmi->bmiColors)[2] = 0b00000000001001001001001001001001;
+    hbitmap[7] = CreateDIBitmap(hdc, &bmih, CBM_INIT, sampleimage, pbmi, DIB_RGB_COLORS);
+
     ReleaseDC(hwnd, hdc);
 
     /* Free allocated memory */
@@ -173,5 +191,6 @@ static void init_bitmaps(HWND hwnd) {
 }
 
 static void delete_bitmaps(void) {
-    DeleteObject(hbitmap1);
+    for (int i = 0; i < 8; i++)
+        DeleteObject(hbitmap[i]);
 }
