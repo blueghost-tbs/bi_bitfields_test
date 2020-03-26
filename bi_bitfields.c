@@ -74,6 +74,8 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
     RECT        rect;
     BITMAP      bm;
     int         i;
+    HDC         hdcMem;
+    HBITMAP     hbmOld;
 
     switch (message) {
         case WM_CREATE:
@@ -83,8 +85,8 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             hdc = BeginPaint(hwnd, &ps);
             GetClientRect(hwnd, &rect);
 
-            HDC hdcMem = CreateCompatibleDC(hdc);
-            HBITMAP hbmOld = SelectObject(hdcMem, cbitmap[0]);
+            hdcMem = CreateCompatibleDC(hdc);
+            hbmOld = (HBITMAP)SelectObject(hdcMem, cbitmap[0]);
 
             GetObject(cbitmap[0], sizeof(bm), &bm);
             for (i = 0; i < 8; i++) {
@@ -157,24 +159,24 @@ static void init_bitmaps(HWND hwnd) {
     ((DWORD *)pbmi->bmiColors)[2] = 0x00FFFFFF;
     cbitmap[3] = CreateDIBitmap(hdc, &bmih, CBM_INIT, circle_bmp.pixel_data, pbmi, DIB_RGB_COLORS);
 
-    ((DWORD *)pbmi->bmiColors)[0] = 0b00000000000000000000000011000000;
-    ((DWORD *)pbmi->bmiColors)[1] = 0b00000000000000001100000000000000;
-    ((DWORD *)pbmi->bmiColors)[2] = 0b00000000110000000000000000000000;
+    ((DWORD *)pbmi->bmiColors)[0] = 0x000000C0;
+    ((DWORD *)pbmi->bmiColors)[1] = 0x0000C000;
+    ((DWORD *)pbmi->bmiColors)[2] = 0x00C00000;
     cbitmap[4] = CreateDIBitmap(hdc, &bmih, CBM_INIT, circle_bmp.pixel_data, pbmi, DIB_RGB_COLORS);
 
-    ((DWORD *)pbmi->bmiColors)[0] = 0b00000000111000001110000011100000;
-    ((DWORD *)pbmi->bmiColors)[1] = 0b00000000000111000001110000011100;
-    ((DWORD *)pbmi->bmiColors)[2] = 0b00000000000000110000001100000011;
+    ((DWORD *)pbmi->bmiColors)[0] = 0x00E0E0E0;
+    ((DWORD *)pbmi->bmiColors)[1] = 0x001C1C1C;
+    ((DWORD *)pbmi->bmiColors)[2] = 0x00030303;
     cbitmap[5] = CreateDIBitmap(hdc, &bmih, CBM_INIT, circle_bmp.pixel_data, pbmi, DIB_RGB_COLORS);
 
-    ((DWORD *)pbmi->bmiColors)[0] = 0b00000000110000110000110000110000;
-    ((DWORD *)pbmi->bmiColors)[1] = 0b00000000001100001100001100001100;
-    ((DWORD *)pbmi->bmiColors)[2] = 0b00000000000011000011000011000011;
+    ((DWORD *)pbmi->bmiColors)[0] = 0x00C30C30;
+    ((DWORD *)pbmi->bmiColors)[1] = 0x0030C30C;
+    ((DWORD *)pbmi->bmiColors)[2] = 0x000C30C3;
     cbitmap[6] = CreateDIBitmap(hdc, &bmih, CBM_INIT, circle_bmp.pixel_data, pbmi, DIB_RGB_COLORS);
 
-    ((DWORD *)pbmi->bmiColors)[0] = 0b00000000100100100100100100100100;
-    ((DWORD *)pbmi->bmiColors)[1] = 0b00000000010010010010010010010010;
-    ((DWORD *)pbmi->bmiColors)[2] = 0b00000000001001001001001001001001;
+    ((DWORD *)pbmi->bmiColors)[0] = 0x00924924;
+    ((DWORD *)pbmi->bmiColors)[1] = 0x00492492;
+    ((DWORD *)pbmi->bmiColors)[2] = 0x00249249;
     cbitmap[7] = CreateDIBitmap(hdc, &bmih, CBM_INIT, circle_bmp.pixel_data, pbmi, DIB_RGB_COLORS);
 
     /* Initialite BITMAPINFOHEADER for the 16-bit RGB565 image */
@@ -196,21 +198,21 @@ static void init_bitmaps(HWND hwnd) {
     pbmi->bmiHeader.biSizeImage = sizeof(ozora_bmp.pixel_data) - 1;
 
     /* Create the 16-bit RGB565 bitmaps with different bitmasks */
-    ((DWORD *)pbmi->bmiColors)[0] = 0b1111100000000000;
-    ((DWORD *)pbmi->bmiColors)[1] = 0b0000011111100000;
-    ((DWORD *)pbmi->bmiColors)[2] = 0b0000000000011111;
+    ((DWORD *)pbmi->bmiColors)[0] = 0xF800;
+    ((DWORD *)pbmi->bmiColors)[1] = 0x07E0;
+    ((DWORD *)pbmi->bmiColors)[2] = 0x001F;
     obitmap[0] = CreateDIBitmap(hdc, &bmih, CBM_INIT, ozora_bmp.pixel_data, pbmi, DIB_RGB_COLORS);
     ((DWORD *)pbmi->bmiColors)[0] = 0xffff;
     ((DWORD *)pbmi->bmiColors)[1] = 0xffff;
     ((DWORD *)pbmi->bmiColors)[2] = 0xffff;
     obitmap[1] = CreateDIBitmap(hdc, &bmih, CBM_INIT, ozora_bmp.pixel_data, pbmi, DIB_RGB_COLORS);
-    ((DWORD *)pbmi->bmiColors)[0] = 0b1111100000000000;
-    ((DWORD *)pbmi->bmiColors)[1] = 0b0000011111111111;
-    ((DWORD *)pbmi->bmiColors)[2] = 0b0000011111111111;
+    ((DWORD *)pbmi->bmiColors)[0] = 0xF800;
+    ((DWORD *)pbmi->bmiColors)[1] = 0x07FF;
+    ((DWORD *)pbmi->bmiColors)[2] = 0x07FF;
     obitmap[2] = CreateDIBitmap(hdc, &bmih, CBM_INIT, ozora_bmp.pixel_data, pbmi, DIB_RGB_COLORS);
-    ((DWORD *)pbmi->bmiColors)[0] = 0b1100000000000000;
-    ((DWORD *)pbmi->bmiColors)[1] = 0b0000011000000000;
-    ((DWORD *)pbmi->bmiColors)[2] = 0b0000000000011000;
+    ((DWORD *)pbmi->bmiColors)[0] = 0xC000;
+    ((DWORD *)pbmi->bmiColors)[1] = 0x0600;
+    ((DWORD *)pbmi->bmiColors)[2] = 0x0018;
     obitmap[3] = CreateDIBitmap(hdc, &bmih, CBM_INIT, ozora_bmp.pixel_data, pbmi, DIB_RGB_COLORS);
 
     ReleaseDC(hwnd, hdc);
@@ -220,8 +222,10 @@ static void init_bitmaps(HWND hwnd) {
 }
 
 static void delete_bitmaps(void) {
-    for (int i = 0; i < 8; i++)
+    int i;
+
+    for (i = 0; i < 8; i++)
         DeleteObject(cbitmap[i]);
-    for (int i = 0; i < 4; i++)
+    for (i = 0; i < 4; i++)
         DeleteObject(obitmap[i]);
 }
