@@ -5,7 +5,7 @@
 
 #define CLIENTWIDTH    512
 #define CLIENTHEIGHT   254
-#define WINDOWSTYLE   WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME & ~WS_MAXIMIZEBOX
+#define WINDOWSTYLE    WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME & ~WS_MAXIMIZEBOX
 
 static HBITMAP cbitmap[8];
 static HBITMAP obitmap[4];
@@ -71,7 +71,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
     HDC         hdc;
     PAINTSTRUCT ps;
-    RECT        rect;
     BITMAP      bm;
     int         i;
     HDC         hdcMem;
@@ -83,7 +82,6 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 
         case WM_PAINT:
             hdc = BeginPaint(hwnd, &ps);
-            GetClientRect(hwnd, &rect);
 
             hdcMem = CreateCompatibleDC(hdc);
             hbmOld = (HBITMAP)SelectObject(hdcMem, cbitmap[0]);
@@ -115,7 +113,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 }
 
 static void init_bitmaps(HWND hwnd) {
-    /* Create and initialite BITMAPINFOHEADER for the 32-bit image */
+    /* Create and initialize BITMAPINFOHEADER for the 32-bit image */
     BITMAPINFOHEADER bmih;
     memset(&bmih, 0, sizeof(BITMAPINFOHEADER));
     bmih.biWidth = circle_bmp.width;
@@ -126,7 +124,7 @@ static void init_bitmaps(HWND hwnd) {
     bmih.biPlanes = 1;
     bmih.biSizeImage = sizeof(circle_bmp.pixel_data) - 1;
 
-    /* Create and initialite BITMAPINFO for the 32-bit image */
+    /* Create and initialize BITMAPINFO for the 32-bit image */
     PBITMAPINFO pbmi = (PBITMAPINFO)calloc(1, sizeof(BITMAPINFOHEADER) + 3 * sizeof(DWORD));
     pbmi->bmiHeader.biWidth = circle_bmp.width;
     pbmi->bmiHeader.biHeight = circle_bmp.height;
@@ -179,7 +177,7 @@ static void init_bitmaps(HWND hwnd) {
     ((DWORD *)pbmi->bmiColors)[2] = 0x00249249;
     cbitmap[7] = CreateDIBitmap(hdc, &bmih, CBM_INIT, circle_bmp.pixel_data, pbmi, DIB_RGB_COLORS);
 
-    /* Initialite BITMAPINFOHEADER for the 16-bit RGB565 image */
+    /* Initialize BITMAPINFOHEADER for the 16-bit RGB565 image */
     bmih.biWidth = ozora_bmp.width;
     bmih.biHeight = ozora_bmp.height;
     bmih.biBitCount = 16;
@@ -188,7 +186,7 @@ static void init_bitmaps(HWND hwnd) {
     bmih.biPlanes = 1;
     bmih.biSizeImage = sizeof(ozora_bmp.pixel_data) - 1;
 
-    /* Initialite BITMAPINFO for the 16-bit RGB565 image */
+    /* Initialize BITMAPINFO for the 16-bit RGB565 image */
     pbmi->bmiHeader.biWidth = ozora_bmp.width;
     pbmi->bmiHeader.biHeight = ozora_bmp.height;
     pbmi->bmiHeader.biBitCount = 16;
